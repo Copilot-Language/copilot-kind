@@ -2,6 +2,7 @@
 
 {-# LANGUAGE GADTs, ExistentialQuantification, LambdaCase, ScopedTypeVariables,
              RankNTypes #-}
+{-# LANGUAGE Safe #-}
 
 module Copilot.Theorem.TransSys.Operators where
 

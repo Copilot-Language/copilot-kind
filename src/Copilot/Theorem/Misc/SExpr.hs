@@ -1,6 +1,7 @@
 --------------------------------------------------------------------------------
 
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE Safe #-}
 
 module Copilot.Theorem.Misc.SExpr where
 

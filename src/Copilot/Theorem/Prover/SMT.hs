@@ -1,6 +1,7 @@
 --------------------------------------------------------------------------------
 
 {-# LANGUAGE LambdaCase, NamedFieldPuns, FlexibleInstances, RankNTypes, GADTs #-}
+{-# LANGUAGE Trustworthy #-}
 
 module Copilot.Theorem.Prover.SMT
   ( module Data.Default

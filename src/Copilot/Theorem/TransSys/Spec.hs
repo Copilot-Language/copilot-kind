@@ -1,6 +1,7 @@
 --------------------------------------------------------------------------------
 
 {-# LANGUAGE ExistentialQuantification, GADTs, RankNTypes #-}
+{-# LANGUAGE Safe #-}
 
 module Copilot.Theorem.TransSys.Spec
   ( module Copilot.Theorem.TransSys.Operators

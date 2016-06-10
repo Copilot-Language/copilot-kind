@@ -1,6 +1,7 @@
 --------------------------------------------------------------------------------
 
 {-# LANGUAGE LambdaCase, NamedFieldPuns, RankNTypes, ViewPatterns #-}
+{-# LANGUAGE Safe #-}
 
 module Copilot.Theorem.Prover.SMTIO
   ( Solver

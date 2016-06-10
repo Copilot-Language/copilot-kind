@@ -2,6 +2,7 @@
 
 {-# LANGUAGE LambdaCase, NamedFieldPuns, FlexibleInstances, RankNTypes, GADTs,
     MultiParamTypeClasses, FlexibleContexts #-}
+{-# LANGUAGE Trustworthy #-}
 
 module Copilot.Theorem.Prover.Z3
   ( module Data.Default

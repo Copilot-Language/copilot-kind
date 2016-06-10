@@ -1,6 +1,7 @@
 --------------------------------------------------------------------------------
 
 {-# LANGUAGE NamedFieldPuns, ViewPatterns, ExistentialQuantification, GADTs #-}
+{-# LANGUAGE Safe #-}
 
 module Copilot.Theorem.Prove
   ( Output  (..)

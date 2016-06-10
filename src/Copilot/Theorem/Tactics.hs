@@ -1,3 +1,5 @@
+{-# LANGUAGE Safe #-}
+
 module Copilot.Theorem.Tactics
   ( instantiate, assume, admit
   ) where

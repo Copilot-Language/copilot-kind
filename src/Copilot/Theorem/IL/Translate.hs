@@ -4,7 +4,7 @@
              LambdaCase #-}
 {-# LANGUAGE Safe #-}
 
-module Copilot.Theorem.IL.Translate ( translate ) where
+module Copilot.Theorem.IL.Translate ( translate, translateWithBounds ) where
 
 import Copilot.Theorem.IL.Spec
 
@@ -48,7 +48,13 @@ ncMux n = "mux" ++ show n
 -- | Translates a Copilot specification to an IL specification
 
 translate :: C.Spec -> IL
-translate (C.Spec {C.specStreams, C.specProperties}) = runTrans $ do
+translate = translate' False
+
+translateWithBounds :: C.Spec -> IL
+translateWithBounds = translate' True
+
+translate' :: Bool -> C.Spec -> IL
+translate' b (C.Spec {C.specStreams, C.specProperties}) = runTrans b $ do
 
   let modelInit = concatMap streamInit specStreams
 
@@ -81,7 +87,9 @@ bound s t = case t of
   C.Word64  -> bound' C.Word64
   _         -> return ()
   where bound' :: (Bounded a, Integral a) => C.Type a -> Trans ()
-        bound' t = localConstraint (Op2 Bool And
+        bound' t = do
+          b <- addBounds <$> get
+          when b $ localConstraint (Op2 Bool And
             (Op2 Bool Le (trConst t minBound) s)
             (Op2 Bool Ge (trConst t maxBound) s))
 
@@ -284,6 +292,7 @@ data TransST = TransST
   { localConstraints :: [Expr]
   , muxes            :: [(Expr, (Expr, Type, Expr, Expr))]
   , nextFresh        :: Integer
+  , addBounds        :: Bool
   }
 
 newMux :: Expr -> Type -> Expr -> Expr -> Trans Expr
@@ -320,8 +329,8 @@ popLocalConstraints :: Trans [Expr]
 popLocalConstraints = liftM2 (++) (localConstraints <$> get) getMuxes
   <* (modify $ \st -> st {localConstraints = [], muxes = []})
 
-runTrans :: Trans a -> a
-runTrans m = evalState m $ TransST [] [] 0
+runTrans :: Bool -> Trans a -> a
+runTrans b m = evalState m $ TransST [] [] 0 b
 
 --------------------------------------------------------------------------------
 

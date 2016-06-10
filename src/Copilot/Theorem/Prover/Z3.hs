@@ -120,13 +120,12 @@ data ProofState = ProofState
 data SolverId = Base | Step
   deriving (Show, Ord, Eq)
 
-getModels :: [PropId] -> [PropId] -> ProofScript ([Expr], [Expr], [Expr], Bool)
+getModels :: [PropId] -> [PropId] -> ProofScript ([Expr], [Expr], [Expr], [Expr], Bool)
 getModels assumptionIds toCheckIds = do
   IL {modelInit, modelRec, properties, inductive} <- spec <$> get
   let (as, as')       = selectProps assumptionIds properties
       (as'', toCheck) = selectProps toCheckIds properties
-      modelRec'       = modelRec ++ as ++ as' ++ as''
-  return (modelInit, modelRec', toCheck, inductive)
+  return (as ++ as', modelInit, modelRec ++ as ++ as' ++ as'', toCheck, inductive)
 
 getSolver :: SolverId -> ProofScript Solver
 getSolver sid = do
@@ -231,11 +230,11 @@ valid :: String -> ProofScript Output
 valid msg = return $ Output P.Valid [msg]
 
 kInduction' :: Word32 -> Word32 -> ProofState -> [PropId] -> [PropId] -> IO Output
-kInduction' startK maxK s as ps = (fromMaybe (Output P.Unknown ["proof by k-induction failed"]) . fst)
+kInduction' startK maxK s as ps = (fromMaybe (Output P.Unknown ["proof by " ++ proofKind (toInteger maxK) ++ " failed"]) . fst)
   <$> runPS (msum (map induction [(toInteger startK) .. (toInteger maxK)]) <* stopSolvers) s
   where
     induction k = do
-      (modelInit, modelRec, toCheck, inductive) <- getModels as ps
+      (assumps, modelInit, modelRec, toCheck, inductive) <- getModels as ps
 
       let base    = [evalAt (Fixed i) m | m <- modelRec, i <- [0 .. k]]
           baseInv = [evalAt (Fixed k) m | m <- toCheck]
@@ -244,47 +243,56 @@ kInduction' startK maxK s as ps = (fromMaybe (Output P.Unknown ["proof by k-indu
                     ++ [evalAt (_n_plus i) m | m <- toCheck, i <- [0 .. k]]
           stepInv = [evalAt (_n_plus $ k + 1) m | m <- toCheck]
 
-      entailment Base (modelInit ++ base) baseInv >>= \case
-        Sat     -> invalid $ "base case failed for " ++ proofKind k
+      entailment Base assumps [ConstB False] >>= \case
         Unknown -> unknown
-        Unsat   ->
-          if not inductive then valid ("proved without induction")
-          else entailment Step step stepInv >>= \case
-            Sat     -> unknown
-            Unknown -> unknown
-            Unsat   -> valid $ "proved with " ++ proofKind k
+        Unsat   -> invalid $ "inconsistent assumptions"
+        Sat     -> entailment Base (modelInit ++ base) baseInv >>= \case
+          Sat     -> invalid $ "base case failed for " ++ proofKind k
+          Unknown -> unknown
+          Unsat   ->
+            if not inductive then valid ("proved without induction")
+            else entailment Step step stepInv >>= \case
+              Sat     -> unknown
+              Unknown -> unknown
+              Unsat   -> valid $ "proved with " ++ proofKind k
 
 onlySat' :: ProofState -> [PropId] -> [PropId] -> IO Output
 onlySat' s as ps = (fromJust . fst) <$> runPS (script <* stopSolvers) s
   where
     script  = do
-      (modelInit, modelRec, toCheck, inductive) <- getModels as ps
+      (assumps, modelInit, modelRec, toCheck, inductive) <- getModels as ps
 
       let base    = map (evalAt (Fixed 0)) modelRec
           baseInv = map (evalAt (Fixed 0)) toCheck
 
-      if inductive
-        then unknown' "proposition requires induction to prove."
-        else entailment Base (modelInit ++ base) (map (Op1 Bool Not) baseInv) >>= \case
-          Unsat   -> invalid "prop not satisfiable"
-          Unknown -> unknown' "failed to find a satisfying model"
-          Sat     -> sat "prop is satisfiable"
+      entailment Base assumps [ConstB False] >>= \case
+        Unknown -> unknown
+        Unsat   -> invalid $ "inconsistent assumptions"
+        Sat     -> if inductive
+          then unknown' "proposition requires induction to prove."
+          else entailment Base (modelInit ++ base) (map (Op1 Bool Not) baseInv) >>= \case
+            Unsat   -> invalid "prop not satisfiable"
+            Unknown -> unknown' "failed to find a satisfying model"
+            Sat     -> sat "prop is satisfiable"
 
 onlyValidity' :: ProofState -> [PropId] -> [PropId] -> IO Output
 onlyValidity' s as ps = (fromJust . fst) <$> runPS (script <* stopSolvers) s
   where
     script  = do
-      (modelInit, modelRec, toCheck, inductive) <- getModels as ps
+      (assumps, modelInit, modelRec, toCheck, inductive) <- getModels as ps
 
       let base    = map (evalAt (Fixed 0)) modelRec
           baseInv = map (evalAt (Fixed 0)) toCheck
 
-      if inductive
-        then unknown' "proposition requires induction to prove."
-        else entailment Base (modelInit ++ base) baseInv >>= \case
-          Unsat   -> valid "proof by Z3"
-          Unknown -> unknown
-          Sat     -> invalid "Z3 found a counter-example."
+      entailment Base assumps [ConstB False] >>= \case
+        Unknown -> unknown
+        Unsat   -> invalid $ "inconsistent assumptions"
+        Sat     -> if inductive
+          then unknown' "proposition requires induction to prove."
+          else entailment Base (modelInit ++ base) baseInv >>= \case
+            Unsat   -> valid "proof by Z3"
+            Unknown -> unknown
+            Sat     -> invalid "Z3 found a counter-example."
 
 selectProps :: [PropId] -> Map PropId ([Expr], Expr) -> ([Expr], [Expr])
 selectProps propIds properties =

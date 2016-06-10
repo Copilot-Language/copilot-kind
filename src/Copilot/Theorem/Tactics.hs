@@ -6,7 +6,6 @@ module Copilot.Theorem.Tactics
 
 import Copilot.Theorem.Prove
 
-import Data.Word
 import Control.Monad.Writer
 
 instantiate :: Proof Universal -> Proof Existential

@@ -14,7 +14,6 @@ module Copilot.Theorem.TransSys.Renaming
 import Copilot.Theorem.TransSys.Spec
 
 import Control.Monad.State.Lazy
-import Control.Applicative
 
 import Data.Maybe (fromMaybe)
 import Data.Map (Map)

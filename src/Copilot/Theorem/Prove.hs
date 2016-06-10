@@ -18,8 +18,7 @@ module Copilot.Theorem.Prove
 import qualified Copilot.Core as Core
 
 import Data.List (intercalate)
-import Control.Applicative (liftA2, Applicative(..))
-import Control.Monad (liftM, ap)
+import Control.Applicative (liftA2)
 import Control.Monad.Writer
 
 --------------------------------------------------------------------------------

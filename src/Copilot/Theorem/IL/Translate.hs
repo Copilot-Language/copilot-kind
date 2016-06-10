@@ -12,7 +12,6 @@ import qualified Copilot.Core as C
 
 import qualified Data.Map.Strict as Map
 
-import Control.Applicative ((<$>), (<*))
 import Control.Monad.State
 
 import Data.Char
@@ -182,6 +181,9 @@ expr (C.Op3 (C.Mux t) cond e1 e2) = do
   e2'   <- expr e2
   newMux cond' (trType t) e1' e2'
 
+expr (C.ExternStruct _ _ _ _) = undefined
+expr (C.GetField _ _ _ _) = undefined
+
 trConst :: C.Type a -> a -> Expr
 trConst t v = case t of
   C.Bool   -> ConstB v
@@ -246,7 +248,7 @@ trOp2 = \case
   C.Pow t        -> (Pow, trType t)
   -- C.Logb t       ->
 
-  C.Eq t         -> (Eq, Bool)
+  C.Eq _         -> (Eq, Bool)
   -- C.Ne t         ->
 
   C.Le t         -> (Le, trType t)

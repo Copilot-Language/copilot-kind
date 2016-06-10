@@ -16,7 +16,6 @@ import System.Process
 import Control.Monad
 import Control.Monad.Trans
 import Control.Monad.Trans.Maybe
-import Control.Applicative ((<$>))
 import Data.Maybe
 import Data.Set ((\\), fromList, Set, union, empty, elems)
 

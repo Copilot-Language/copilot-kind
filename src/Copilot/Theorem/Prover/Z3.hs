@@ -16,7 +16,6 @@ import Copilot.Theorem.IL
 import Copilot.Theorem.Prove (Output (..), check, Proof, Universal, Existential)
 import qualified Copilot.Theorem.Prove as P
 
-import Control.Applicative ((<$>), (<*), (<*>), (<$>))
 import Control.Monad (msum, mzero, when, void, unless)
 import Control.Monad.State (StateT, runStateT, get, modify)
 import Control.Monad.Trans.Maybe (MaybeT (..))

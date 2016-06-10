@@ -7,7 +7,6 @@ module Copilot.Theorem.Misc.SExpr where
 
 import Text.ParserCombinators.Parsec
 import Text.PrettyPrint.HughesPJ as PP hiding (char, Str)
-import Control.Applicative hiding ((<|>), empty)
 
 import Control.Monad
 

@@ -25,7 +25,6 @@ import Copilot.Theorem.Prover.TPTP (Tptp)
 import qualified Copilot.Theorem.Prover.SMTLib as SMTLib
 import qualified Copilot.Theorem.Prover.TPTP as TPTP
 
-import Control.Applicative ((<$>), (<*))
 import Control.Monad (msum, unless, mzero)
 import Control.Monad.State (StateT, runStateT, lift, get, modify)
 import Control.Monad.IO.Class (liftIO)
